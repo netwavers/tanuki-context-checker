@@ -1,49 +1,95 @@
 :root {
-  /* Ocean & Cafe Brand Colors */
-  --seacafe-ocean-dark: #0b132b;      /* 深海メイン背景 */
-  --seacafe-ocean-deep: #1c2541;      /* カード・パネル背景 */
-  --seacafe-ocean-surface: #3a506b;   /* サブサーフェス */
-  --seacafe-aqua-primary: #00b4d8;    /* アクアブルー（主アクセント） */
-  --seacafe-aqua-glow: #90e0ef;       /* 発光アクセント */
-  --seacafe-sand-cream: #f4f1de;      /* サンドベージュ（標準テキスト） */
-  --seacafe-sand-gold: #e9c46a;       /* 警告・中間表示 */
-  --seacafe-coral-warn: #e76f51;       /* 高AI判定・アラート */
-  --seacafe-mint-safe: #2a9d8f;        /* 人間ゆらぎ強・安全表示 */
+  /* Warm Earth / Organic Precision Core Palette */
+  --bg-base: #151313;
+  --color-background: #151313;
+  --color-surface-dim: #151313;
+  --color-surface-bright: #3b3839;
 
-  /* Additional Palette Tokens */
-  --seacafe-white-muted: rgba(244, 241, 222, 0.75);
-  --seacafe-white-dim: rgba(244, 241, 222, 0.45);
-  --seacafe-border-glow: rgba(0, 180, 216, 0.35);
+  /* Surface Hierarchy Colors */
+  --surface-container-lowest: #0f0e0e;
+  --surface-container-low: #1d1b1b;
+  --surface-container: #211f1f;
+  --surface-container-high: #2b2929;
+  --surface-container-highest: #363434;
 
-  /* Glassmorphic Tokens */
-  --glass-bg-header: rgba(11, 19, 43, 0.75);
-  --glass-bg-panel: rgba(28, 37, 65, 0.65);
-  --glass-bg-card: rgba(255, 255, 255, 0.06);
-  --glass-bg-hover: rgba(255, 255, 255, 0.12);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-border-accent: rgba(0, 180, 216, 0.4);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  /* Primary, Secondary, Sage Accent & Error Colors */
+  --color-primary: #d5c2c2;
+  --color-on-primary: #3a2d2e;
+  --color-primary-container: #594b4b;
+  --color-on-primary-container: #cfbcbb;
+
+  --color-secondary: #cfc4c4;
+  --color-on-secondary: #352f2f;
+  --color-secondary-container: #4f4747;
+  --color-on-secondary-container: #c1b6b6;
+
+  --color-tertiary: #c0c9c2;
+  --color-sage: #c0c9c2;
+  --color-on-tertiary: #2a322e;
+  --color-tertiary-container: #48504b;
+  --color-on-tertiary-container: #bac2bb;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-on-surface: #e7e1e1;
+  --color-on-surface-variant: #d1c3c3;
+  --color-outline: #9a8e8e;
+  --color-outline-variant: #4e4444;
+
+  /* Legacy SeaCafe mapping for backwards compatibility */
+  --seacafe-ocean-dark: #151313;
+  --seacafe-ocean-deep: #1d1b1b;
+  --seacafe-ocean-surface: #211f1f;
+  --seacafe-aqua-primary: #d5c2c2;
+  --seacafe-aqua-glow: #e7e1e1;
+  --seacafe-sand-cream: #e7e1e1;
+  --seacafe-sand-gold: #c0c9c2;
+  --seacafe-coral-warn: #ffb4ab;
+  --seacafe-mint-safe: #c0c9c2;
+  --seacafe-white-muted: rgba(231, 225, 225, 0.75);
+  --seacafe-white-dim: rgba(231, 225, 225, 0.55);
+  --seacafe-border-glow: rgba(213, 194, 194, 0.35);
+
+  /* Glassmorphism Tokens */
+  --glass-bg-header: rgba(29, 27, 27, 0.8);
+  --glass-bg-panel: rgba(33, 31, 31, 0.7);
+  --glass-bg-card: rgba(43, 41, 41, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-accent: rgba(213, 194, 194, 0.3);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
   --glass-blur: blur(12px);
 
+  /* Score Gradient */
+  --score-gradient: linear-gradient(90deg, #4ade80, #facc15, #f87171);
+
+  /* Typography Fonts */
+  --font-family-base: 'Noto Sans JP', sans-serif;
+  --font-family-headline: 'Noto Sans JP', sans-serif;
+  --font-family-display: 'Noto Sans JP', sans-serif;
+  --font-family-code: 'JetBrains Mono', monospace;
+  --font-family-label: 'JetBrains Mono', monospace;
+
   /* Spacing Tokens */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
 
   /* Border Radius */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
   --radius-full: 9999px;
 
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Typography */
-  --font-family-base: 'Outfit', 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-family-code: 'JetBrains Mono', 'Fira Code', monospace;
 }
+

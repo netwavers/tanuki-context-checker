@@ -19,3 +19,8 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+
+# Downloaded attachments
+attachments/
+*.zip
+

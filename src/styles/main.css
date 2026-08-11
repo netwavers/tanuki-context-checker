@@ -1,6 +1,57 @@
 @import './tokens.css';
 
-/* Reset & Global Base */
+/* ==========================================================================
+   Warm Earth / Organic Precision Theme & Token Variables Definition
+   ========================================================================== */
+:root {
+  /* 1. Warm Earth Core Color Palette */
+  --bg-base: #151313;                   /* ベース背景色 */
+  --color-background: #151313;
+  --color-primary: #d5c2c2;              /* プライマリカラー */
+  --color-secondary: #cfc4c4;
+  --color-sage: #c0c9c2;                 /* セカンダリ/セージアクセント */
+  --color-tertiary: #c0c9c2;             /* セージアクセント */
+  --color-error: #ffb4ab;                /* エラー/AI警告色 */
+
+  /* 2. Surface Hierarchy Colors */
+  --surface-container-low: #1d1b1b;     /* サーフェス階層 1 (low) */
+  --surface-container: #211f1f;         /* サーフェス階層 2 (base) */
+  --surface-container-high: #2b2929;    /* サーフェス階層 3 (high) */
+  --surface-container-highest: #363434; /* サーフェス階層 4 (highest) */
+
+  /* 3. On-Surface & Outline Colors */
+  --color-on-surface: #e7e1e1;
+  --color-on-surface-variant: #d1c3c3;
+  --color-outline: #9a8e8e;
+  --color-outline-variant: #4e4444;
+
+  /* 4. Typography & Icons */
+  --font-family-base: 'Noto Sans JP', sans-serif;
+  --font-family-code: 'JetBrains Mono', monospace;
+
+  /* 5. Visual Effects */
+  --score-gradient: linear-gradient(90deg, #4ade80, #facc15, #f87171);
+}
+
+/* Material Symbols Outlined Icon Class Definition */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Reset & Global Base Styles */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -15,15 +66,15 @@ html {
 
 body {
   font-family: var(--font-family-base);
-  background-color: var(--seacafe-ocean-dark);
-  color: var(--seacafe-sand-cream);
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
 }
 
-/* Background Animated Ocean Wave Motifs & Mesh Gradient */
+/* Background Atmosphere - Smoked Warm Earth Subtle Radial Gradients */
 body::before {
   content: '';
   position: fixed;
@@ -32,9 +83,9 @@ body::before {
   width: 140%;
   height: 140%;
   background: 
-    radial-gradient(circle at 20% 20%, rgba(0, 180, 216, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 80% 60%, rgba(144, 224, 239, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 50% 90%, rgba(28, 37, 65, 0.8) 0%, transparent 60%);
+    radial-gradient(circle at 20% 20%, rgba(213, 194, 194, 0.07) 0%, transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(192, 201, 194, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(29, 27, 27, 0.85) 0%, transparent 60%);
   z-index: -2;
   pointer-events: none;
 }
@@ -44,10 +95,10 @@ body::before {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 220px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2300b4d8' fill-opacity='0.04' d='M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,181.3C672,181,768,203,864,213.3C960,224,1056,224,1152,208C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") repeat-x bottom;
-  background-size: 1440px 220px;
-  animation: waveFloat 18s linear infinite;
+  height: 180px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d5c2c2' fill-opacity='0.03' d='M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,181.3C672,181,768,203,864,213.3C960,224,1056,224,1152,208C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") repeat-x bottom;
+  background-size: 1440px 180px;
+  animation: waveFloat 20s linear infinite;
   z-index: -1;
   pointer-events: none;
 }
@@ -72,6 +123,7 @@ body::before {
   padding: var(--space-lg) var(--space-md);
 }
 
+/* Responsive Grid Layout (Desktop: 2 Columns, Mobile/Tablet: Single Column) */
 .workspace-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -85,12 +137,12 @@ body::before {
   }
 }
 
-/* Glassmorphic Panel Base */
+/* Glassmorphism Panel Base Component */
 .glass-panel {
-  background: var(--glass-bg-panel);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  background: rgba(33, 31, 31, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   box-shadow: var(--glass-shadow);
   padding: var(--space-lg);
@@ -98,24 +150,29 @@ body::before {
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Score Gradient Utility */
+.score-gradient {
+  background: linear-gradient(90deg, #4ade80, #facc15, #f87171);
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(11, 19, 43, 0.5);
+  background: var(--surface-container-low);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--seacafe-ocean-surface);
+  background: var(--surface-container-highest);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--seacafe-aqua-primary);
+  background: var(--color-outline);
 }
 
 /* Footer Styling */
@@ -123,10 +180,11 @@ body::before {
   text-align: center;
   padding: var(--space-lg) var(--space-md);
   font-size: 0.85rem;
-  color: var(--seacafe-white-dim);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-on-surface-variant);
+  border-top: 1px solid var(--color-outline-variant);
   margin-top: var(--space-xl);
 }
 .app-footer span {
-  color: var(--seacafe-aqua-glow);
+  color: var(--color-primary);
 }
+

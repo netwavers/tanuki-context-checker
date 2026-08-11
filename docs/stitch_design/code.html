@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tanuki Context Checker - SeaCafe Edition</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "tertiary-fixed-dim": "#c0c9c2",
+                        "on-error": "#690005",
+                        "surface": "#151313",
+                        "inverse-primary": "#6a5b5b",
+                        "surface-variant": "#363434",
+                        "surface-container-lowest": "#0f0e0e",
+                        "secondary-fixed-dim": "#cfc4c3",
+                        "tertiary": "#c0c9c2",
+                        "surface-container": "#211f1f",
+                        "primary": "#d5c2c2",
+                        "primary-container": "#594b4b",
+                        "surface-tint": "#d5c2c2",
+                        "outline": "#9a8e8e",
+                        "tertiary-fixed": "#dce5de",
+                        "surface-container-highest": "#363434",
+                        "on-tertiary-container": "#bac2bb",
+                        "on-tertiary-fixed-variant": "#414944",
+                        "tertiary-container": "#48504b",
+                        "surface-container-high": "#2b2929",
+                        "error-container": "#93000a",
+                        "on-primary-fixed": "#241919",
+                        "outline-variant": "#4e4444",
+                        "secondary-fixed": "#ece0df",
+                        "secondary": "#cfc4c3",
+                        "on-secondary-fixed": "#201a1a",
+                        "surface-container-low": "#1d1b1b",
+                        "surface-dim": "#151313",
+                        "inverse-on-surface": "#323030",
+                        "on-primary": "#3a2d2d",
+                        "on-tertiary-fixed": "#161d19",
+                        "background": "#151313",
+                        "surface-bright": "#3b3938",
+                        "inverse-surface": "#e7e1e0",
+                        "on-secondary-fixed-variant": "#4c4545",
+                        "on-secondary": "#352f2f",
+                        "on-primary-fixed-variant": "#514344",
+                        "on-surface": "#e7e1e0",
+                        "on-background": "#e7e1e0",
+                        "on-tertiary": "#2a322e",
+                        "on-primary-container": "#cfbcbb",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d5c2c2",
+                        "on-secondary-container": "#c4b9b9",
+                        "secondary-container": "#514a49"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Sans JP", "sans-serif"],
+                        "display": ["Noto Sans JP", "sans-serif"],
+                        "body": ["Noto Sans JP", "sans-serif"],
+                        "label": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(33, 31, 31, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .score-gradient {
+            background: linear-gradient(90deg, #4ade80, #facc15, #f87171);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #151313;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #363434;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body select-none">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header (Shared-like but focused) -->
+<header class="sticky top-0 z-50 flex items-center bg-background/80 backdrop-blur-md p-4 justify-between border-b border-surface-variant">
+<div class="text-primary flex size-10 shrink-0 items-center justify-center" data-icon="PawPrint">
+<span class="material-symbols-outlined text-3xl">pets</span>
+</div>
+<h1 class="text-on-surface text-lg font-bold leading-tight tracking-tight flex-1 text-center">Tanuki Context Checker</h1>
+<div class="flex w-10 items-center justify-end">
+<button class="text-on-surface hover:bg-surface-variant p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col gap-6 p-4 pb-32">
+<!-- Version & Privacy Notice -->
+<div class="text-center">
+<p class="text-outline text-xs font-label">SeaCafe Edition v1.0.0 | Pure Client-Side</p>
+<p class="text-outline-variant text-[10px] mt-1">すべての解析はブラウザ内で完結し、データは送信されません。</p>
+</div>
+<!-- Score Display Section -->
+<section class="glass-panel rounded-xl p-6 flex flex-col items-center gap-4 shadow-xl">
+<h2 class="text-primary-fixed-dim text-sm font-medium tracking-widest uppercase">AI均質化スコア</h2>
+<div class="relative flex items-center justify-center size-40">
+<svg class="size-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-error" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-dasharray="440" stroke-dashoffset="96.8" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-5xl font-bold text-on-surface">78</span>
+<span class="text-xs text-outline">/ 100</span>
+</div>
+</div>
+<div class="text-center">
+<p class="text-error text-lg font-bold">AI生成の可能性が高い</p>
+<p class="text-on-surface-variant text-xs mt-1">文章に高度な均質性が確認されました</p>
+</div>
+<div class="w-full h-1.5 score-gradient rounded-full opacity-30 mt-2"></div>
+</section>
+<!-- Analysis Input Section -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-on-surface text-sm font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">edit_note</span>
+                        解析テキスト入力
+                    </h3>
+<button class="text-primary text-xs font-medium flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-xs">delete</span>
+                        クリア
+                    </button>
+</div>
+<!-- Presets / Chips -->
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-xs text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all">
+                        人間エッセイ
+                    </button>
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-xs text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all">
+                        AI生成ブログ
+                    </button>
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-xs text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all">
+                        技術論文
+                    </button>
+<button class="shrink-0 px-4 py-1.5 rounded-full bg-surface-container-high border border-outline-variant text-xs text-on-surface-variant hover:bg-primary-container hover:text-on-primary-container transition-all">
+                        SNS投稿
+                    </button>
+</div>
+<div class="relative group">
+<textarea class="w-full h-48 bg-surface-container-low border border-outline-variant rounded-xl p-4 text-on-surface text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none" placeholder="解析したい日本語の文章を入力してください..."></textarea>
+<div class="absolute bottom-3 right-3 text-outline text-[10px] font-label">
+                        0 / 2000 文字
+                    </div>
+</div>
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-bold text-base shadow-lg active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">analytics</span>
+                    解析を実行する
+                </button>
+</section>
+<!-- Detailed Breakdown Cards -->
+<section class="flex flex-col gap-3">
+<h3 class="text-on-surface text-sm font-bold px-1 mb-1">詳細分析メトリクス</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container rounded-xl p-4 border border-outline-variant/30">
+<p class="text-outline text-[10px] uppercase font-bold">Perplexity</p>
+<p class="text-on-surface text-xl font-bold mt-1">12.4</p>
+<div class="w-full h-1 bg-surface-container-highest rounded-full mt-2">
+<div class="h-full bg-error rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-4 border border-outline-variant/30">
+<p class="text-outline text-[10px] uppercase font-bold">Burstiness</p>
+<p class="text-on-surface text-xl font-bold mt-1">Low</p>
+<div class="w-full h-1 bg-surface-container-highest rounded-full mt-2">
+<div class="h-full bg-tertiary rounded-full" style="width: 30%;"></div>
+</div>
+</div>
+</div>
+<!-- Explanation Card -->
+<div class="bg-surface-container-low rounded-xl p-4 border-l-4 border-primary mt-2">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div>
+<p class="text-on-surface text-xs font-bold">判定の解説</p>
+<p class="text-on-surface-variant text-[11px] leading-relaxed mt-1">
+                                文章構造が非常に一定であり、語彙の選択が予測可能な範囲に留まっています。これは典型的な大規模言語モデルによる生成パターンの特徴です。
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Atmospheric Visual (Shader/Background) -->
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mt-4">
+<webgl-shader class="absolute inset-0 w-full h-full opacity-40" src="{{DATA:ANIMATION:ANIMATION_1}}"></webgl-shader>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<p class="text-primary-fixed-dim text-xs font-bold">Tanuki Neural Engine v2</p>
+<p class="text-outline text-[10px]">解析エンジンは最適化されています</p>
+</div>
+</div>
+</main>
+<!-- Fixed Bottom Navigation (Shared Component Integration Logic) -->
+<nav class="fixed bottom-0 left-0 right-0 z-50">
+<div class="flex gap-2 border-t border-[#312f2f] bg-[#222020] px-4 pb-6 pt-2 shadow-2xl">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 rounded-full text-white" href="#">
+<div class="text-white flex h-8 items-center justify-center" data-icon="Scan" data-size="24px" data-weight="fill">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">scan</span>
+</div>
+<p class="text-white text-[10px] font-medium leading-normal tracking-[0.015em]">解析</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-[#ada9a9]" href="#">
+<div class="text-[#ada9a9] flex h-8 items-center justify-center" data-icon="ClockCounterClockwise" data-size="24px" data-weight="regular">
+<span class="material-symbols-outlined">history</span>
+</div>
+<p class="text-[#ada9a9] text-[10px] font-medium leading-normal tracking-[0.015em]">履歴</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-[#ada9a9]" href="#">
+<div class="text-[#ada9a9] flex h-8 items-center justify-center" data-icon="Gear" data-size="24px" data-weight="regular">
+<span class="material-symbols-outlined">settings</span>
+</div>
+<p class="text-[#ada9a9] text-[10px] font-medium leading-normal tracking-[0.015em]">設定</p>
+</a>
+</div>
+</nav>
+</div>
+<!-- Micro-interactions JavaScript -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.querySelector('textarea');
+            const counter = document.querySelector('.font-label');
+            
+            textarea.addEventListener('input', (e) => {
+                const len = e.target.value.length;
+                counter.textContent = `${len} / 2000 文字`;
+                
+                if (len > 1800) {
+                    counter.classList.add('text-error');
+                } else {
+                    counter.classList.remove('text-error');
+                }
+            });
+
+            // Preset Chip interactions
+            const chips = document.querySelectorAll('button.shrink-0');
+            const sampleTexts = {
+                '人間エッセイ': '昨日、久しぶりに地元の喫茶店へ行きました。マスターは相変わらず不愛想でしたが、コーヒーの香りは昔と変わらず、なんだかホッとしました。',
+                'AI生成ブログ': '近年、持続可能な社会の実現に向けた取り組みが加速しています。本記事では、テクノロジーが環境保護に果たす役割について考察します。',
+                '技術論文': '本研究の目的は、深層学習を用いた日本語文章の均質化検出アルゴリズムの提案である。評価実験の結果、高い精度を確認した。',
+                'SNS投稿': '最近のAI凄すぎん？w 誰でもプロ級の絵が描ける時代きたな...これからのクリエイターはどう生き残るべきなんだろう🤔'
+            };
+
+            chips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const type = chip.textContent.trim();
+                    if (sampleTexts[type]) {
+                        textarea.value = sampleTexts[type];
+                        textarea.dispatchEvent(new Event('input'));
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

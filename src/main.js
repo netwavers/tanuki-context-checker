@@ -4,6 +4,7 @@ import { TextInputPanelComponent } from './components/TextInputPanel.js';
 import { ScoreGaugeDialComponent } from './components/ScoreGaugeDial.js';
 import { LayerBreakdownCardComponent } from './components/LayerBreakdownCard.js';
 import { EvidenceListCardComponent } from './components/EvidenceListCard.js';
+import { BottomNavComponent } from './components/BottomNav.js';
 
 class App {
   constructor() {
@@ -70,6 +71,18 @@ class App {
 
     const evidenceListContainer = document.getElementById('evidenceListContainer');
     this.evidenceList = new EvidenceListCardComponent(evidenceListContainer);
+
+    // 4. Fixed Bottom Navigation Component
+    const bottomNavContainer = document.getElementById('bottomNavContainer');
+    if (bottomNavContainer) {
+      this.bottomNav = new BottomNavComponent(bottomNavContainer, (tab) => {
+        if (tab === 'settings') {
+          alert('設定画面: SeaCafe Edition v1.0.0 (Pure Client-Side Engine)');
+        } else if (tab === 'history') {
+          alert('履歴機能: 直近の解析履歴はローカルストレージに保存されます。');
+        }
+      });
+    }
 
     // Initial Dashboard reset
     this.updateDashboard();

@@ -1,53 +1,127 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html class="dark" lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tanuki Context Checker - SeaCafe Edition</title>
   <meta name="description" content="生成AI文章チェッカー — 思考のゆらぎ・均質化を検出するプライバシー完全保護ブラウザ完結型WebUI">
-  
-  <!-- Google Fonts -->
+
+  <!-- Google Fonts & Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- CSS Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "error": "#ffb4ab",
+            "tertiary-fixed-dim": "#c0c9c2",
+            "on-error": "#690005",
+            "surface": "#151313",
+            "inverse-primary": "#6a5b5b",
+            "surface-variant": "#363434",
+            "surface-container-lowest": "#0f0e0e",
+            "secondary-fixed-dim": "#cfc4c3",
+            "tertiary": "#c0c9c2",
+            "surface-container": "#211f1f",
+            "primary": "#d5c2c2",
+            "primary-container": "#594b4b",
+            "surface-tint": "#d5c2c2",
+            "outline": "#9a8e8e",
+            "tertiary-fixed": "#dce5de",
+            "surface-container-highest": "#363434",
+            "on-tertiary-container": "#bac2bb",
+            "on-tertiary-fixed-variant": "#414944",
+            "tertiary-container": "#48504b",
+            "surface-container-high": "#2b2929",
+            "error-container": "#93000a",
+            "on-primary-fixed": "#241919",
+            "outline-variant": "#4e4444",
+            "secondary-fixed": "#ece0df",
+            "secondary": "#cfc4c3",
+            "on-secondary-fixed": "#201a1a",
+            "surface-container-low": "#1d1b1b",
+            "surface-dim": "#151313",
+            "inverse-on-surface": "#323030",
+            "on-primary": "#3a2d2d",
+            "on-tertiary-fixed": "#161d19",
+            "background": "#151313",
+            "surface-bright": "#3b3938",
+            "inverse-surface": "#e7e1e0",
+            "on-secondary-fixed-variant": "#4c4545",
+            "on-secondary": "#352f2f",
+            "on-primary-fixed-variant": "#514344",
+            "on-surface": "#e7e1e0",
+            "on-background": "#e7e1e0",
+            "on-tertiary": "#2a322e",
+            "on-primary-container": "#cfbcbb",
+            "on-error-container": "#ffdad6",
+            "primary-fixed-dim": "#d5c2c2",
+            "on-secondary-container": "#c4b9b9",
+            "secondary-container": "#514a49"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Noto Sans JP", "sans-serif"],
+            "display": ["Noto Sans JP", "sans-serif"],
+            "body": ["Noto Sans JP", "sans-serif"],
+            "label": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS Styles -->
   <link rel="stylesheet" href="./src/styles/main.css">
   <link rel="stylesheet" href="./src/styles/components.css">
 </head>
-<body>
-  <div id="app">
+<body class="bg-background text-on-background font-body select-none">
+  <div id="app" class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
     <!-- Header -->
     <div id="headerContainer"></div>
 
     <!-- Main Workspace -->
-    <main class="main-container">
-      <div class="workspace-grid">
-        <!-- Left Column: Input Panel -->
-        <div id="inputPanelContainer"></div>
+    <main class="flex-1 flex flex-col gap-6 p-4 max-w-6xl mx-auto w-full pb-32">
+      <!-- Privacy & Version Notice -->
+      <div class="text-center">
+        <p class="text-outline text-xs font-label">SeaCafe Edition v1.0.0 | Pure Client-Side</p>
+        <p class="text-outline-variant text-[10px] mt-1">すべての解析はブラウザ内で完結し、データは送信されません。</p>
+      </div>
 
-        <!-- Right Column: Analysis Dashboard -->
-        <div class="dashboard-column">
+      <!-- Main Layout Grid -->
+      <div class="workspace-grid grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left Column: Input Panel (7 cols on lg) -->
+        <div id="inputPanelContainer" class="lg:col-span-7"></div>
+
+        <!-- Right Column: Analysis Dashboard (5 cols on lg) -->
+        <div class="dashboard-column lg:col-span-5 flex flex-col gap-6">
           <!-- Score Gauge Dial -->
           <div id="scoreGaugeContainer"></div>
-          <!-- 4-Layer Breakdown Progress Bars -->
+          <!-- Metrics Breakdown -->
           <div id="layerBreakdownContainer"></div>
-          <!-- Itemized Evidence Explanations -->
+          <!-- Evidence & Rationale Card -->
           <div id="evidenceListContainer"></div>
         </div>
       </div>
     </main>
 
-    <!-- Animated Ocean Wave Background Element -->
+    <!-- Ocean Wave Background -->
     <div class="ocean-wave-bg"></div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-      <p>🐾 <strong>Tanuki Context Checker — SeaCafe Edition</strong> v1.0.0 | Pure Client-Side Architecture</p>
-      <p style="margin-top: 4px; font-size: 0.78rem; opacity: 0.7;">
-        すべての解析処理はブラウザ内部（Web Worker / JS Pipeline）で実行されます。データは外部に一切送信されません。
-      </p>
-    </footer>
+    <!-- Bottom Navigation Component -->
+    <div id="bottomNavContainer"></div>
   </div>
 
   <script type="module" src="./src/main.js"></script>
