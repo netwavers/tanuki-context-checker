@@ -1,0 +1,16 @@
+{
+  "project_id": "2e808425-9e18-419a-9518-34c0bcdb3d59",
+  "project_title": "たぬき文脈チェッカー",
+  "project_description": "文章のAI臭さのチェックを行うツールを開発",
+  "resources": [
+    {
+      "id": "a81a8312-d8c3-45d2-9547-8d4e6be2eff1",
+      "resource_type": "local_directory",
+      "resource_ref": {
+        "label": "tanuki- context- checker",
+        "daemon_id": "019fc9d2-4506-7acf-9ef7-19896c696ee4",
+        "local_path": "/home/tanuki/PyProjects/tanuki- context- checker"
+      }
+    }
+  ]
+}

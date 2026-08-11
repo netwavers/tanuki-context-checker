@@ -1,0 +1,49 @@
+:root {
+  /* Ocean & Cafe Brand Colors */
+  --seacafe-ocean-dark: #0b132b;      /* 深海メイン背景 */
+  --seacafe-ocean-deep: #1c2541;      /* カード・パネル背景 */
+  --seacafe-ocean-surface: #3a506b;   /* サブサーフェス */
+  --seacafe-aqua-primary: #00b4d8;    /* アクアブルー（主アクセント） */
+  --seacafe-aqua-glow: #90e0ef;       /* 発光アクセント */
+  --seacafe-sand-cream: #f4f1de;      /* サンドベージュ（標準テキスト） */
+  --seacafe-sand-gold: #e9c46a;       /* 警告・中間表示 */
+  --seacafe-coral-warn: #e76f51;       /* 高AI判定・アラート */
+  --seacafe-mint-safe: #2a9d8f;        /* 人間ゆらぎ強・安全表示 */
+
+  /* Additional Palette Tokens */
+  --seacafe-white-muted: rgba(244, 241, 222, 0.75);
+  --seacafe-white-dim: rgba(244, 241, 222, 0.45);
+  --seacafe-border-glow: rgba(0, 180, 216, 0.35);
+
+  /* Glassmorphic Tokens */
+  --glass-bg-header: rgba(11, 19, 43, 0.75);
+  --glass-bg-panel: rgba(28, 37, 65, 0.65);
+  --glass-bg-card: rgba(255, 255, 255, 0.06);
+  --glass-bg-hover: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --glass-border-accent: rgba(0, 180, 216, 0.4);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-blur: blur(12px);
+
+  /* Spacing Tokens */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-family-base: 'Outfit', 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-code: 'JetBrains Mono', 'Fira Code', monospace;
+}

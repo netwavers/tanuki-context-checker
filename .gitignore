@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+
+# Environment & Logs
+.env
+*.log
+
+# OS & Editors
+.DS_Store
+.vscode/
+.idea/

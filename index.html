@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tanuki Context Checker - SeaCafe Edition</title>
+  <meta name="description" content="生成AI文章チェッカー — 思考のゆらぎ・均質化を検出するプライバシー完全保護ブラウザ完結型WebUI">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Styles -->
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/components.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <div id="headerContainer"></div>
+
+    <!-- Main Workspace -->
+    <main class="main-container">
+      <div class="workspace-grid">
+        <!-- Left Column: Input Panel -->
+        <div id="inputPanelContainer"></div>
+
+        <!-- Right Column: Analysis Dashboard -->
+        <div class="dashboard-column">
+          <!-- Score Gauge Dial -->
+          <div id="scoreGaugeContainer"></div>
+          <!-- 4-Layer Breakdown Progress Bars -->
+          <div id="layerBreakdownContainer"></div>
+          <!-- Itemized Evidence Explanations -->
+          <div id="evidenceListContainer"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Animated Ocean Wave Background Element -->
+    <div class="ocean-wave-bg"></div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>🐾 <strong>Tanuki Context Checker — SeaCafe Edition</strong> v1.0.0 | Pure Client-Side Architecture</p>
+      <p style="margin-top: 4px; font-size: 0.78rem; opacity: 0.7;">
+        すべての解析処理はブラウザ内部（Web Worker / JS Pipeline）で実行されます。データは外部に一切送信されません。
+      </p>
+    </footer>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
