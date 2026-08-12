@@ -7,7 +7,8 @@ if (typeof self !== 'undefined' && typeof self.postMessage === 'function') {
     const { text, domain, docId, requestId } = e.data || {};
     try {
       const report = checker.analyzeText(text, domain, docId);
-      self.postMessage({ status: 'success', requestId, report });
+      const proofreadPayload = checker.generateProofreadPayload(text, domain, docId);
+      self.postMessage({ status: 'success', requestId, report, proofreadPayload });
     } catch (err) {
       self.postMessage({ status: 'error', requestId, error: err.message || String(err) });
     }

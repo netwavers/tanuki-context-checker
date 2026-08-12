@@ -11,6 +11,7 @@ class App {
     this.domain = 'general';
     this.text = '';
     this.report = null;
+    this.proofreadPayload = null;
 
     this.checker = new TanukiContextChecker();
     this.worker = null;
@@ -22,9 +23,10 @@ class App {
     try {
       this.worker = new Worker(new URL('./analyzer/worker.js', import.meta.url), { type: 'module' });
       this.worker.onmessage = (e) => {
-        const { status, report, error } = e.data || {};
+        const { status, report, proofreadPayload, error } = e.data || {};
         if (status === 'success' && report) {
           this.report = report;
+          this.proofreadPayload = proofreadPayload;
           this.updateDashboard();
         } else if (error) {
           console.error('Worker Analysis Error:', error);
@@ -91,6 +93,7 @@ class App {
   runAnalysis() {
     if (!this.text || this.text.trim().length === 0) {
       this.report = null;
+      this.proofreadPayload = null;
       this.updateDashboard();
       return;
     }
@@ -109,9 +112,11 @@ class App {
   runDirectAnalysis() {
     try {
       this.report = this.checker.analyzeText(this.text, this.domain, `doc_${Date.now()}`);
+      this.proofreadPayload = this.checker.generateProofreadPayload(this.text, this.domain, `doc_${Date.now()}`);
     } catch (e) {
       console.error('Direct Analysis Error:', e);
       this.report = null;
+      this.proofreadPayload = null;
     }
     this.updateDashboard();
   }
@@ -119,7 +124,7 @@ class App {
   updateDashboard() {
     this.scoreGauge.update(this.report);
     this.layerBreakdown.update(this.report);
-    this.evidenceList.update(this.report);
+    this.evidenceList.update(this.report, this.proofreadPayload);
   }
 }
 

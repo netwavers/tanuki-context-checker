@@ -296,4 +296,166 @@ export class TanukiContextChecker {
       domain_applied: domain
     };
   }
+
+  generateProofreadPayload(text, domain = "general", docId = "doc_0") {
+    const report = this.analyzeText(text, domain, docId);
+
+    const ast = this.parser.parse(text, docId);
+    const symTable = new SymbolTable();
+    const layerResults = {};
+    for (let i = 0; i < this.passes.length; i++) {
+      const p = this.passes[i];
+      layerResults[p.name] = p.execute(ast, symTable);
+    }
+
+    const surface = layerResults["SurfacePass"] || {};
+    const lexical = layerResults["LexicalPass"] || {};
+    const structural = layerResults["StructuralPass"] || {};
+    const flow = layerResults["FlowPass"] || {};
+
+    const hasCodeblockWrapper = /```[a-zA-Z]*/.test(text);
+    const hasMetaClosing = /ご参考になりましたら幸いです|お気軽にお知らせください/.test(text);
+
+    const diagnostics = {
+      surface: {
+        markdown_anomaly_score: Number((surface.markdown_anomaly_score || 0).toFixed(4)),
+        punctuation_uniformity: Number((surface.punctuation_uniformity || 0).toFixed(4)),
+        em_dash_density: Number((surface.em_dash_density || 0).toFixed(4)),
+        has_codeblock_wrapper: hasCodeblockWrapper ? 1.0 : 0.0,
+        has_meta_closing: hasMetaClosing ? 1.0 : 0.0,
+      },
+      lexical: {
+        ai_phrase_density: Number((lexical.ai_phrase_density || 0).toFixed(4)),
+        ngram_entropy: Number((lexical.ngram_entropy || 0).toFixed(4)),
+        hedge_expression_ratio: Number((lexical.hedge_expression_ratio || 0).toFixed(4)),
+      },
+      structural: {
+        depth_variance: Number((structural.depth_variance || 0).toFixed(4)),
+        sentence_length_cv: Number((structural.sentence_length_cv || 0).toFixed(4)),
+        heading_density: Number((structural.heading_density || 0).toFixed(4)),
+        list_density: Number((structural.list_density || 0).toFixed(4)),
+      },
+      flow: {
+        topic_jump_density: Number((flow.topic_jump_density || 0).toFixed(4)),
+        self_correction_count: Number(flow.self_correction_count || 0),
+        emphasis_imbalance_entropy: Number((flow.emphasis_imbalance_entropy || 0).toFixed(4)),
+        first_person_experience_density: Number((flow.first_person_experience_density || 0).toFixed(4)),
+        unresolved_references_count: Number(symTable.unresolved_references_count || 0),
+      },
+    };
+
+    const directives = [];
+
+    if (hasCodeblockWrapper || (surface.markdown_anomaly_score || 0) > 0.1) {
+      directives.push({
+        layer: "surface",
+        priority: "HIGH",
+        issue: "コードブロック枠（```markdown）やプロンプト残留マークが検出されました",
+        action: "不要なコードブロック枠（```markdown等）を取り除き、テキスト本文のみを出力してください。",
+      });
+    }
+    if (hasMetaClosing) {
+      directives.push({
+        layer: "surface",
+        priority: "HIGH",
+        issue: "AI特有の無用な締めくくり挨拶（'ご参考になれば幸いです'等）が含まれています",
+        action: "文末のテンプレート挨拶を削除し、本文として自然に締めくくってください。",
+      });
+    }
+
+    if ((lexical.ai_phrase_density || 0) > 2.0) {
+      directives.push({
+        layer: "lexical",
+        priority: "HIGH",
+        issue: `AI特有の頻出定型句の密度が高頻度です (${(lexical.ai_phrase_density || 0).toFixed(2)}/1000文字)`,
+        action: "『〜において重要です』『結論として』『〜が挙げられます』などのAI定型句を避け、文脈に応じた具象的な語彙に書き換えてください。",
+      });
+    }
+    if ((lexical.hedge_expression_ratio || 0) > 0.25) {
+      directives.push({
+        layer: "lexical",
+        priority: "MEDIUM",
+        issue: `責任回避・抽象ヘッジ表現が多用されています (比率: ${(lexical.hedge_expression_ratio || 0).toFixed(2)})`,
+        action: "『〜と考えられる』『〜と言えるでしょう』といった曖昧な語尾を減らし、主張や事実関係を明確に言い切るか具体例を補強してください。",
+      });
+    }
+    if ((lexical.ngram_entropy || 0) < 4.5 && (text || "").length > 150) {
+      directives.push({
+        layer: "lexical",
+        priority: "LOW",
+        issue: `語彙バリエーションの多様性が低下しています (エントロピー: ${(lexical.ngram_entropy || 0).toFixed(2)})`,
+        action: "同一単語の連続使用を避け、類語やバリエーションのある表現を採用してください。",
+      });
+    }
+
+    if ((structural.sentence_length_cv || 0) < 0.25) {
+      directives.push({
+        layer: "structural",
+        priority: "HIGH",
+        issue: `文長の均一性が高く、文のリズムに人間の試行錯誤的なゆらぎが乏しいです (CV: ${(structural.sentence_length_cv || 0).toFixed(2)})`,
+        action: "一言で言い切る短い文と、条件や根拠を重ねる複文を意図的に混ぜ合わせ、文章の緩急（リズム）を作り出してください。",
+      });
+    }
+
+    if ((flow.self_correction_count || 0) === 0 && (report.layer_scores.flow || 0) >= 50.0) {
+      directives.push({
+        layer: "flow",
+        priority: "HIGH",
+        issue: "軌道修正・自己訂正（'ただし...' '実際には...'）や具体的な個人的視点が欠如しています",
+        action: "『ただし実際には〜という側面もあります』『一見〜に思えますが〜』のように、思考の揺れや補足を適度に変調として差し込んでください。",
+      });
+    }
+    if ((flow.first_person_experience_density || 0) === 0.0 && (report.layer_scores.flow || 0) >= 50.0) {
+      directives.push({
+        layer: "flow",
+        priority: "MEDIUM",
+        issue: "無人格的で一律な解説トーンになっており、筆者の文脈・立ち位置が見えにくいです",
+        action: "筆者の観察視点や判断理由、現場での実際のニュアンスを補い、血の通った文章に校正してください。",
+      });
+    }
+
+    if (directives.length === 0) {
+      directives.push({
+        layer: "general",
+        priority: "LOW",
+        issue: "強固なAI均質シグナルは検出されませんでした",
+        action: "全体的な誤字脱字・てにをはのチェックを行い、文章の推敲を維持してください。",
+      });
+    }
+
+    const systemPrompt =
+      "あなたは文章の「AI臭さ（過剰な均質化・定型句・ゆらぎの欠如）」を解消し、" +
+      "人間が筆を執ったような自然で味わいのある文章に校正・リライティングするプロのエディターです。";
+
+    const formattedDirectives = directives
+      .map((d, idx) => `${idx + 1}. [${d.layer.toUpperCase()}] (${d.priority}) ${d.action} (問題: ${d.issue})`)
+      .join("\n");
+
+    const userPrompt =
+      `以下の【対象テキスト】を、【判定レポート】および【AI校正指示】に従って自然で人間らしい文章にAI校正（リライティング）してください。\n\n` +
+      `【判定概要】:\n` +
+      `・適用ドメイン: ${domain}\n` +
+      `・総合AIスコア: ${report.overall_score.toFixed(1)} / 100.0 (判定: ${report.classification})\n` +
+      `・層別スコア: 表層=${(report.layer_scores.surface || 0).toFixed(1)}, 語彙=${(report.layer_scores.lexical || 0).toFixed(1)}, 構造=${(report.layer_scores.structural || 0).toFixed(1)}, フロー=${(report.layer_scores.flow || 0).toFixed(1)}\n\n` +
+      `【AI校正指示 (Directives)】:\n${formattedDirectives}\n\n` +
+      `【対象テキスト】:\n${(text || "").trim()}\n\n` +
+      `【出力要件】:\n` +
+      `・元の文章の重要情報や要点は損なわず維持してください。\n` +
+      `・上記の指示を反映し、AI特有の無機質さを取り除いた「校正後の文章のみ」を出力してください。`;
+
+    return {
+      doc_id: docId,
+      overall_score: report.overall_score,
+      classification: report.classification,
+      confidence: report.confidence,
+      domain_applied: domain,
+      layer_scores: report.layer_scores,
+      diagnostics: diagnostics,
+      proofreading_directives: directives,
+      llm_prompt_template: {
+        system_prompt: systemPrompt,
+        user_prompt: userPrompt,
+      },
+    };
+  }
 }

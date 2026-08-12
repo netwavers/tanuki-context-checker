@@ -30,11 +30,47 @@ export class EvidenceListCardComponent {
             <li class="text-xs text-outline italic">解析結果がここに表示されます...</li>
           </ul>
         </div>
+
+        <!-- AI Proofreading Prompt Card -->
+        <div class="border-t border-outline-variant/30 pt-4 flex flex-col gap-2" id="proofreadPanel">
+          <div class="flex items-center justify-between">
+            <h3 class="text-on-surface text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1 font-label">
+              <span class="material-symbols-outlined text-sm">auto_fix_high</span>
+              AI校正プロンプト (AI Proofreading Context)
+            </h3>
+            <button id="copyPromptBtn" class="px-2.5 py-1 text-[11px] font-medium bg-primary-container hover:bg-primary/20 text-on-primary-container rounded-lg flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-xs">content_copy</span>
+              <span id="copyBtnText">プロンプトをコピー</span>
+            </button>
+          </div>
+          <div class="bg-surface-container-lowest p-3 rounded-lg border border-outline-variant/30 text-[11px] font-mono text-on-surface-variant overflow-x-auto max-h-40 whitespace-pre-wrap leading-relaxed select-text" id="proofreadPromptPreview">
+            （解析結果からAI校正指示プロンプトが自動生成されます）
+          </div>
+        </div>
       </section>
     `;
 
     this.rationaleSummary = this.container.querySelector('#rationaleSummary');
     this.evidenceList = this.container.querySelector('#evidenceList');
+    this.proofreadPromptPreview = this.container.querySelector('#proofreadPromptPreview');
+    this.copyPromptBtn = this.container.querySelector('#copyPromptBtn');
+    this.copyBtnText = this.container.querySelector('#copyBtnText');
+
+    this.currentPrompt = '';
+
+    this.copyPromptBtn?.addEventListener('click', () => {
+      if (!this.currentPrompt) return;
+      navigator.clipboard.writeText(this.currentPrompt).then(() => {
+        if (this.copyBtnText) {
+          this.copyBtnText.textContent = 'コピーしました！';
+          setTimeout(() => {
+            if (this.copyBtnText) this.copyBtnText.textContent = 'プロンプトをコピー';
+          }, 2000);
+        }
+      }).catch(err => {
+        console.error('Failed to copy prompt:', err);
+      });
+    });
   }
 
   update(report) {
@@ -103,6 +139,23 @@ export class EvidenceListCardComponent {
     });
 
     this.evidenceList.innerHTML = items.join('');
+
+    if (payload && payload.llm_prompt_template) {
+      this.currentPrompt = `SYSTEM PROMPT:\n${payload.llm_prompt_template.system_prompt}\n\nUSER PROMPT:\n${payload.llm_prompt_template.user_prompt}`;
+      if (this.proofreadPromptPreview) {
+        this.proofreadPromptPreview.textContent = this.currentPrompt;
+      }
+    } else if (report && report.llm_prompt_template) {
+      this.currentPrompt = `SYSTEM PROMPT:\n${report.llm_prompt_template.system_prompt}\n\nUSER PROMPT:\n${report.llm_prompt_template.user_prompt}`;
+      if (this.proofreadPromptPreview) {
+        this.proofreadPromptPreview.textContent = this.currentPrompt;
+      }
+    } else {
+      this.currentPrompt = '';
+      if (this.proofreadPromptPreview) {
+        this.proofreadPromptPreview.textContent = '（解析対象テキスト入力時にAI校正プロンプトが生成されます）';
+      }
+    }
   }
 
   escapeHtml(str) {

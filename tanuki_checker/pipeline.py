@@ -18,6 +18,9 @@ from tanuki_checker.metrics import (
     StructuralMetrics,
     FlowMetrics,
     DomainBaseline,
+    ProofreadingDirective,
+    LLMPromptTemplate,
+    AIProofreadPayload,
 )
 
 MIN_TEXT_LENGTH = 100
@@ -71,6 +74,13 @@ DEFAULT_DOMAIN_BASELINES: Dict[str, DomainBaseline] = {
         correction_factor=0.20,
         expected_structural_weight_modifier=1.0,
         description="散文・雑記・エッセイ。ゆらぎの欠如を強力にペナルティ判定。",
+    ),
+    "novel": DomainBaseline(
+        domain="novel",
+        bias_term=-0.10,
+        correction_factor=0.60,
+        expected_structural_weight_modifier=0.7,
+        description="小説・文芸テキスト（参考値）。会話文・台詞主体の展開による変動を考慮。",
     ),
     "general": DomainBaseline(
         domain="general",
@@ -308,3 +318,179 @@ class TanukiContextChecker:
             evidence_explanations=evidence,
             domain_applied=domain,
         )
+
+    def generate_proofread_payload(self, text: str, domain: str = "general", doc_id: str = "doc_0") -> AIProofreadPayload:
+        report = self.analyze_text(text, domain=domain, doc_id=doc_id)
+
+        ast = self.parser.parse(text, doc_id=doc_id)
+        sym_table = SymbolTable()
+        layer_results: Dict[str, Dict[str, float]] = {}
+        for p in self.passes:
+            layer_results[p.name] = p.execute(ast, sym_table)
+
+        surface = SurfaceMetrics(**layer_results.get("SurfacePass", {}))
+        lexical = LexicalMetrics(**layer_results.get("LexicalPass", {}))
+        structural = StructuralMetrics(**layer_results.get("StructuralPass", {}))
+        flow = FlowMetrics(**layer_results.get("FlowPass", {}))
+
+        has_codeblock_wrapper = bool(re.search(r"```[a-zA-Z]*", text))
+        has_meta_closing = bool(
+            re.search(r"ご参考になりましたら幸いです|お気軽にお知らせください", text)
+        )
+
+        diagnostics = {
+            "surface": {
+                "markdown_anomaly_score": round(surface.markdown_anomaly_score, 4),
+                "punctuation_uniformity": round(surface.punctuation_uniformity, 4),
+                "em_dash_density": round(surface.em_dash_density, 4),
+                "has_codeblock_wrapper": 1.0 if has_codeblock_wrapper else 0.0,
+                "has_meta_closing": 1.0 if has_meta_closing else 0.0,
+            },
+            "lexical": {
+                "ai_phrase_density": round(lexical.ai_phrase_density, 4),
+                "ngram_entropy": round(lexical.ngram_entropy, 4),
+                "hedge_expression_ratio": round(lexical.hedge_expression_ratio, 4),
+            },
+            "structural": {
+                "depth_variance": round(structural.depth_variance, 4),
+                "sentence_length_cv": round(structural.sentence_length_cv, 4),
+                "heading_density": round(structural.heading_density, 4),
+                "list_density": round(structural.list_density, 4),
+            },
+            "flow": {
+                "topic_jump_density": round(flow.topic_jump_density, 4),
+                "self_correction_count": float(flow.self_correction_count),
+                "emphasis_imbalance_entropy": round(flow.emphasis_imbalance_entropy, 4),
+                "first_person_experience_density": round(flow.first_person_experience_density, 4),
+                "unresolved_references_count": float(sym_table.unresolved_references_count),
+            },
+        }
+
+        directives: List[ProofreadingDirective] = []
+
+        if has_codeblock_wrapper or surface.markdown_anomaly_score > 0.1:
+            directives.append(
+                ProofreadingDirective(
+                    layer="surface",
+                    priority="HIGH",
+                    issue="コードブロック枠（```markdown）やプロンプト残留マークが検出されました",
+                    action="不要なコードブロック枠（```markdown等）を取り除き、テキスト本文のみを出力してください。",
+                )
+            )
+        if has_meta_closing:
+            directives.append(
+                ProofreadingDirective(
+                    layer="surface",
+                    priority="HIGH",
+                    issue="AI特有の無用な締めくくり挨拶（'ご参考になれば幸いです'等）が含まれています",
+                    action="文末のテンプレート挨拶を削除し、本文として自然に締めくくってください。",
+                )
+            )
+
+        if lexical.ai_phrase_density > 2.0:
+            directives.append(
+                ProofreadingDirective(
+                    layer="lexical",
+                    priority="HIGH",
+                    issue=f"AI特有の頻出定型句の密度が高頻度です ({lexical.ai_phrase_density:.2f}/1000文字)",
+                    action="『〜において重要です』『結論として』『〜が挙げられます』などのAI定型句を避け、文脈に応じた具象的な語彙に書き換えてください。",
+                )
+            )
+        if lexical.hedge_expression_ratio > 0.25:
+            directives.append(
+                ProofreadingDirective(
+                    layer="lexical",
+                    priority="MEDIUM",
+                    issue=f"責任回避・抽象ヘッジ表現が多用されています (比率: {lexical.hedge_expression_ratio:.2f})",
+                    action="『〜と考えられる』『〜と言えるでしょう』といった曖昧な語尾を減らし、主張や事実関係を明確に言い切るか具体例を補強してください。",
+                )
+            )
+        if lexical.ngram_entropy < 4.5 and len(text) > 150:
+            directives.append(
+                ProofreadingDirective(
+                    layer="lexical",
+                    priority="LOW",
+                    issue=f"語彙バリエーションの多様性が低下しています (エントロピー: {lexical.ngram_entropy:.2f})",
+                    action="同一単語の連続使用を避け、類語やバリエーションのある表現を採用してください。",
+                )
+            )
+
+        if structural.sentence_length_cv < 0.25:
+            directives.append(
+                ProofreadingDirective(
+                    layer="structural",
+                    priority="HIGH",
+                    issue=f"文長の均一性が高く、文のリズムに人間の試行錯誤的なゆらぎが乏しいです (CV: {structural.sentence_length_cv:.2f})",
+                    action="一言で言い切る短い文と、条件や根拠を重ねる複文を意図的に混ぜ合わせ、文章の緩急（リズム）を作り出してください。",
+                )
+            )
+
+        if flow.self_correction_count == 0 and report.layer_scores.get("flow", 0.0) >= 50.0:
+            directives.append(
+                ProofreadingDirective(
+                    layer="flow",
+                    priority="HIGH",
+                    issue="軌道修正・自己訂正（'ただし...' '実際には...'）や具体的な個人的視点が欠如しています",
+                    action="『ただし実際には〜という側面もあります』『一見〜に思えますが〜』のように、思考の揺れや補足を適度に変調として差し込んでください。",
+                )
+            )
+        if flow.first_person_experience_density == 0.0 and report.layer_scores.get("flow", 0.0) >= 50.0:
+            directives.append(
+                ProofreadingDirective(
+                    layer="flow",
+                    priority="MEDIUM",
+                    issue="無人格的で一律な解説トーンになっており、筆者の文脈・立ち位置が見えにくいです",
+                    action="筆者の観察視点や判断理由、現場での実際のニュアンスを補い、血の通った文章に校正してください。",
+                )
+            )
+
+        if not directives:
+            directives.append(
+                ProofreadingDirective(
+                    layer="general",
+                    priority="LOW",
+                    issue="強固なAI均質シグナルは検出されませんでした",
+                    action="全体的な誤字脱字・てにをはのチェックを行い、文章の推敲を維持してください。",
+                )
+            )
+
+        system_prompt = (
+            "あなたは文章の「AI臭さ（過剰な均質化・定型句・ゆらぎの欠如）」を解消し、"
+            "人間が筆を執ったような自然で味わいのある文章に校正・リライティングするプロのエディターです。"
+        )
+
+        formatted_directives = "\n".join(
+            [
+                f"{idx+1}. [{d.layer.upper()}] ({d.priority}) {d.action} (問題: {d.issue})"
+                for idx, d in enumerate(directives)
+            ]
+        )
+
+        user_prompt = (
+            f"以下の【対象テキスト】を、【判定レポート】および【AI校正指示】に従って自然で人間らしい文章にAI校正（リライティング）してください。\n\n"
+            f"【判定概要】:\n"
+            f"・適用ドメイン: {domain}\n"
+            f"・総合AIスコア: {report.overall_score:.1f} / 100.0 (判定: {report.classification})\n"
+            f"・層別スコア: 表層={report.layer_scores.get('surface',0):.1f}, 語彙={report.layer_scores.get('lexical',0):.1f}, 構造={report.layer_scores.get('structural',0):.1f}, フロー={report.layer_scores.get('flow',0):.1f}\n\n"
+            f"【AI校正指示 (Directives)】:\n{formatted_directives}\n\n"
+            f"【対象テキスト】:\n{text.strip()}\n\n"
+            f"【出力要件】:\n"
+            f"・元の文章の重要情報や要点は損なわず維持してください。\n"
+            f"・上記の指示を反映し、AI特有の無機質さを取り除いた「校正後の文章のみ」を出力してください。"
+        )
+
+        return AIProofreadPayload(
+            doc_id=doc_id,
+            overall_score=report.overall_score,
+            classification=report.classification,
+            confidence=report.confidence,
+            domain_applied=domain,
+            layer_scores=report.layer_scores,
+            diagnostics=diagnostics,
+            proofreading_directives=directives,
+            llm_prompt_template=LLMPromptTemplate(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+            ),
+        )
+

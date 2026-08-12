@@ -55,3 +55,28 @@ class FinalAssessmentReport(BaseModel):
     evidence_explanations: List[str] = Field(default_factory=list)
     domain_applied: str = "general"
 
+
+class ProofreadingDirective(BaseModel):
+    layer: str        # "surface", "lexical", "structural", "flow"
+    priority: str     # "HIGH", "MEDIUM", "LOW"
+    issue: str        # 検出された問題・シグナル
+    action: str       # LLM校正時に適用すべき具体アクション
+
+
+class LLMPromptTemplate(BaseModel):
+    system_prompt: str
+    user_prompt: str
+
+
+class AIProofreadPayload(BaseModel):
+    doc_id: str
+    overall_score: float
+    classification: str
+    confidence: ConfidenceFlag
+    domain_applied: str
+    layer_scores: Dict[str, float] = Field(default_factory=dict)
+    diagnostics: Dict[str, Dict[str, float]] = Field(default_factory=dict)
+    proofreading_directives: List[ProofreadingDirective] = Field(default_factory=list)
+    llm_prompt_template: LLMPromptTemplate
+
+

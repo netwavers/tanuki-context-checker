@@ -34,6 +34,16 @@ def main(args: Optional[list] = None) -> None:
         action="store_true",
         help="結果をJSON形式で出力",
     )
+    parser.add_argument(
+        "--proofread-json",
+        action="store_true",
+        help="AI校正用の診断データ・指示・プロンプトテンプレートを含む詳細JSON形式で出力",
+    )
+    parser.add_argument(
+        "--proofread-prompt",
+        action="store_true",
+        help="LLM（Gemini/GPT/Claude）に入力可能な校正指示プロンプトテキストを出力",
+    )
 
     parsed_args = parser.parse_args(args)
 
@@ -54,6 +64,18 @@ def main(args: Optional[list] = None) -> None:
         sys.exit(1)
 
     checker = TanukiContextChecker()
+
+    if parsed_args.proofread_json or parsed_args.proofread_prompt:
+        payload = checker.generate_proofread_payload(input_text, domain=parsed_args.domain)
+        if parsed_args.proofread_json:
+            print(json.dumps(payload.dict(), ensure_ascii=False, indent=2))
+        else:
+            print("=== SYSTEM PROMPT ===")
+            print(payload.llm_prompt_template.system_prompt)
+            print("\n=== USER PROMPT ===")
+            print(payload.llm_prompt_template.user_prompt)
+        return
+
     report = checker.analyze_text(input_text, domain=parsed_args.domain)
 
     if parsed_args.json:
