@@ -59,21 +59,83 @@ export class EvidenceListCardComponent {
     this.currentPrompt = '';
 
     this.copyPromptBtn?.addEventListener('click', () => {
-      if (!this.currentPrompt) return;
-      navigator.clipboard.writeText(this.currentPrompt).then(() => {
+      if (!this.currentPrompt) {
         if (this.copyBtnText) {
-          this.copyBtnText.textContent = 'コピーしました！';
+          this.copyBtnText.textContent = 'コピー対象がありません';
           setTimeout(() => {
             if (this.copyBtnText) this.copyBtnText.textContent = 'プロンプトをコピー';
           }, 2000);
         }
-      }).catch(err => {
-        console.error('Failed to copy prompt:', err);
-      });
+        return;
+      }
+      this.copyToClipboard(this.currentPrompt)
+        .then(() => {
+          if (this.copyBtnText) {
+            this.copyBtnText.textContent = 'コピーしました！';
+            setTimeout(() => {
+              if (this.copyBtnText) this.copyBtnText.textContent = 'プロンプトをコピー';
+            }, 2000);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to copy prompt:', err);
+          if (this.copyBtnText) {
+            this.copyBtnText.textContent = 'コピー失敗';
+            setTimeout(() => {
+              if (this.copyBtnText) this.copyBtnText.textContent = 'プロンプトをコピー';
+            }, 2000);
+          }
+        });
     });
   }
 
-  update(report) {
+  copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise((resolve, reject) => {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-999999px';
+        textarea.style.top = '-999999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (successful) {
+          resolve();
+        } else {
+          reject(new Error('execCommand copy failed'));
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  update(report, payload) {
+    // 1. Update Prompt Panel
+    if (payload && payload.llm_prompt_template) {
+      this.currentPrompt = `=== SYSTEM PROMPT ===\n${payload.llm_prompt_template.system_prompt}\n\n=== USER PROMPT ===\n${payload.llm_prompt_template.user_prompt}`;
+      if (this.proofreadPromptPreview) {
+        this.proofreadPromptPreview.textContent = this.currentPrompt;
+      }
+    } else if (report && report.llm_prompt_template) {
+      this.currentPrompt = `=== SYSTEM PROMPT ===\n${report.llm_prompt_template.system_prompt}\n\n=== USER PROMPT ===\n${report.llm_prompt_template.user_prompt}`;
+      if (this.proofreadPromptPreview) {
+        this.proofreadPromptPreview.textContent = this.currentPrompt;
+      }
+    } else {
+      this.currentPrompt = '';
+      if (this.proofreadPromptPreview) {
+        this.proofreadPromptPreview.textContent = '（解析対象テキスト入力時にAI校正プロンプトが自動生成されます）';
+      }
+    }
+
+    // 2. Update Evidence List & Rationale Summary
     if (!report || !report.evidence_explanations || report.evidence_explanations.length === 0) {
       this.rationaleSummary.textContent = '解析対象のテキストを入力してください。';
       this.evidenceList.innerHTML = `
@@ -139,23 +201,6 @@ export class EvidenceListCardComponent {
     });
 
     this.evidenceList.innerHTML = items.join('');
-
-    if (payload && payload.llm_prompt_template) {
-      this.currentPrompt = `SYSTEM PROMPT:\n${payload.llm_prompt_template.system_prompt}\n\nUSER PROMPT:\n${payload.llm_prompt_template.user_prompt}`;
-      if (this.proofreadPromptPreview) {
-        this.proofreadPromptPreview.textContent = this.currentPrompt;
-      }
-    } else if (report && report.llm_prompt_template) {
-      this.currentPrompt = `SYSTEM PROMPT:\n${report.llm_prompt_template.system_prompt}\n\nUSER PROMPT:\n${report.llm_prompt_template.user_prompt}`;
-      if (this.proofreadPromptPreview) {
-        this.proofreadPromptPreview.textContent = this.currentPrompt;
-      }
-    } else {
-      this.currentPrompt = '';
-      if (this.proofreadPromptPreview) {
-        this.proofreadPromptPreview.textContent = '（解析対象テキスト入力時にAI校正プロンプトが生成されます）';
-      }
-    }
   }
 
   escapeHtml(str) {
